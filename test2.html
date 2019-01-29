@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko-kr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<div id="view"></div>
+<input type="button" id="increase" value="+">
+<input type="button" id="decrease" value="-">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.6.0/redux.js"></script>
+<script>
+    const btnIncrease = document.getElementById('increase');
+    const btnDecrease = document.getElementById('decrease');
+    const view = document.getElementById('view');
+
+    // actions type
+    const INCREASE = 'INCREASE';
+    const DECREASE = 'DECREASE';
+
+    // actions
+    const increase = ()=>{
+      return {type:INCREASE}
+    };
+    const decrease = ()=>{
+      return {type:DECREASE}
+    };
+
+    //reducer
+    const counter = (state={num:0},action)=>{
+      switch(action.type){
+        case INCREASE:
+          return {num:state.num + 1};
+        case DECREASE:
+          return {num:state.num-1};
+        default:
+          return state
+      }
+    }
+
+    const {createStore} = Redux;
+    const store = createStore(counter);
+
+    const render=()=>{
+      view.innerText = store.getState().num;
+    };
+
+    render();
+    store.subscribe(render);
+
+    btnIncrease.addEventListener('click',()=>{
+      store.dispatch(increase());
+    });
+
+    btnDecrease.addEventListener('click',()=>{
+      store.dispatch(decrease());
+    });
+</script>
+</body>
+</html>
