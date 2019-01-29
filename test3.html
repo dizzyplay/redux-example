@@ -8,60 +8,83 @@
     <title>Document</title>
 </head>
 <body>
-    <div id="view"></div>
-    <button id="incrementBtn">+</button>
-    <button id="decrementBtn">-</button>
-<script  src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.1/redux.min.js" ></script>
+<div id="view"></div>
+<button id="incrementBtn">+</button>
+<button id="decrementBtn">-</button>
+<div id="info"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.1/redux.min.js"></script>
 
-    <script>
-    const btnIncrement = document.getElementById('incrementBtn');
-    const btnDecrement = document.getElementById('decrementBtn');
-    const view = document.getElementById('view');
+<script>
+  const btnIncrement = document.getElementById('incrementBtn');
+  const btnDecrement = document.getElementById('decrementBtn');
+  const view = document.getElementById('view');
+  const infoview = document.getElementById('info');
 
-    // type
-    const INCREASE = 'INCREASE';
-    const DECREASE = 'DECREASE';
+  const information = [{
+    id: 1,
+    name: 'vovo'
+  }, {
+    id: 2,
+    name: 'james'
+  }]
 
-    //actions
-    const increase = ()=>{
-      return ({type:INCREASE})
-    };
-    const decrease = ()=>{
-      return ({type:DECREASE})
-    };
+  // type
+  const INCREASE = 'INCREASE';
+  const DECREASE = 'DECREASE';
 
-    //state Init
-    const initState = {num:0};
+  //actions
+  const increase = () => {
+    return ({type: INCREASE})
+  };
+  const decrease = () => {
+    return ({type: DECREASE})
+  };
+  const changeName = () => {
+    return {type: 'CHANGENAME'}
+  }
+  //state Init
+  const initState = {num: 0, information: information};
 
-    //reducer
-    const counter = (state={num:0},action)=>{
-      switch(action.type){
-        case INCREASE:
-          return {num: state.num + 1};
-        case DECREASE:
-          return {num: state.num -1};
-        default:
-          return state;
-      }
-    };
+  //reducer
+  const counter = (state = initState, action) => {
+    switch (action.type) {
+      case INCREASE:
+        return {...state, num: state.num + 1};
+      case DECREASE:
+        return {...state, num: state.num - 1};
+      case 'CHANGENAME':
+        const info = state.information;
+        return ({
+          ...state,
+          information: info.concat({id: 3, name: 'test'})
+        });
+      default:
+        return state;
+    }
+  };
 
-    const {createStore} = Redux;
-    const store = createStore(counter);
+  const {createStore} = Redux;
+  const store = createStore(counter);
 
-    //render
-    const render=()=>{
-      view.innerText=store.getState().num;
-    };
+  //render
+  const render = () => {
+    const {information} = store.getState()
+    console.log(information)
+    const list = information.map(data => data.id + data.name)
+    view.innerText = store.getState().num;
+    infoview.innerText = list;
+  };
 
-    render();
-    store.subscribe(render);
+  render();
+  store.subscribe(render);
 
-    btnIncrement.addEventListener('click',()=>{
-      store.dispatch(increase());
-    });
-    btnDecrement.addEventListener('click',()=>{
-      store.dispatch(decrease());
-    });
+  btnIncrement.addEventListener('click', () => {
+    store.dispatch(increase());
+  });
+  btnDecrement.addEventListener('click', () => {
+    store.dispatch(changeName());
+    store.dispatch(decrease());
+  });
 </script>
 </body>
 </html>
