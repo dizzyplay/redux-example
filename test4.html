@@ -9,79 +9,89 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.1/redux.min.js"></script>
 </head>
 <body>
+<button id="btnPrev">Prev</button>
+<button id="btnNext">NEXT</button>
+<div id="page_view"></div>
 <div id="view"></div>
-<button id="btnIncrease">+</button>
-<button id="btnDecrease">-</button>
-<button id="btnShowData">SHOW DATA</button>
-<div id="view_2"></div>
 <script>
   //elements
-  const btnIncrement = document.getElementById("btnIncrease");
-  const btnDecrement = document.getElementById("btnDecrease");
-  const btnShowData = document.getElementById("btnShowData");
+  const btnNext = document.getElementById("btnNext");
+  const btnPrev = document.getElementById("btnPrev");
   const view = document.getElementById('view');
-  const view2 = document.getElementById('view_2');
+  const page_view = document.getElementById('page_view');
 
   // action type
-  const INCREASE = 'INCREASE';
-  const DECREASE = 'DECREASE';
-  const FETCHDATA = 'FETCHDATA';
+  const NEXT = 'NEXT';
+  const PREV = 'PREV';
+  const INIT = 'INIT';
 
   //actions
-  const increase = (data) => {
-    return {type: INCREASE, data: data}
+  const next = (data,page) => {
+    return {type: NEXT,data,page}
   };
-  const decrease = () => {
-    return {type: DECREASE}
+  const prev = (data, page) => {
+    return {type: PREV,data, page}
   };
 
   //init
-  const url = 'http://5c1e0372bc26950013fbcaf3.mockapi.io/users';
+  const url = 'http://localhost:8000/blog/api';
 
-  const initState = {num: 0, data: []};
 
   //reducer
-  const counter = (state = initState, action) => {
+  const counter = (state={page:1,data:[]}, action) => {
     switch (action.type) {
-      case INCREASE:
-        return {...state, num: state.num + 1};
-      case DECREASE:
-        return {num: state.num - 1};
-      case FETCHDATA:
-        return {...state, data: action.data};
+      case NEXT:
+        return {data:action.data, page: action.page};
+      case PREV:
+        return {data: action.data, page: action.page};
+      case INIT:
+        return {page:1,data: action.data};
       default:
         return state;
     }
-  }
+  };
 
   const {createStore} = Redux;
   const store = createStore(counter);
 
+  const initState =async ()=>{
+    const data = await getData(url,1);
+    store.dispatch({type:INIT,data:data})
+  };
+  initState();
+
   //render
   const render = () => {
     const list = store.getState().data;
-    const listData = list.map(data => `id ${data.id} name is ${data.name} \n`);
-    view.innerText = store.getState().num;
-    view2.innerText = listData.join('');
+    const page = store.getState().page;
+    const listData = list.map(data =>
+        `id ${data.id} name is ${data.nickname}<br><img width="400" src="http://localhost:8000${data.photo}">  <hr>`);
+    view.innerHTML = listData.join("")
+    page_view.innerHTML = `<h3>Page [${page}] </h3>`;
 
   };
   render();
   store.subscribe(render);
 
-  btnIncrement.addEventListener('click', () => {
-    store.dispatch(increase())
+  btnNext.addEventListener('click', async () => {
+    const page = store.getState().page;
+    const nextPage = page +1
+    const data = await getData(url,nextPage);
+    store.dispatch(next(data,nextPage));
   });
-  btnDecrement.addEventListener('click', () => {
-    store.dispatch(decrease());
+  btnPrev.addEventListener('click', async () => {
+    const page = store.getState().page;
+    let prevPage;
+    page > 1 ? prevPage=page-1: prevPage=1;
+    const data = await getData(url,prevPage);
+    store.dispatch(prev(data,prevPage));
   });
-  btnShowData.addEventListener('click', async () => {
-    const data = await getData(url);
-    store.dispatch({type: FETCHDATA, data: data})
-  })
+
 
   // api
-  async function getData(url) {
-    const response = await fetch(url);
+  async function getData(url,page) {
+    const request_url = `${url}/?page=${page}`;
+    const response = await fetch(request_url);
     return response.json()
   }
 
