@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko-kr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/4.0.1/redux.min.js"></script>
+</head>
+<body>
+<div id="view"></div>
+<button id="btnIncrease">+</button>
+<button id="btnDecrease">-</button>
+<button id="btnShowData">SHOW DATA</button>
+<div id="view_2"></div>
+<script>
+  //elements
+  const btnIncrement = document.getElementById("btnIncrease");
+  const btnDecrement = document.getElementById("btnDecrease");
+  const btnShowData = document.getElementById("btnShowData");
+  const view = document.getElementById('view');
+  const view2 = document.getElementById('view_2');
+
+  // action type
+  const INCREASE = 'INCREASE';
+  const DECREASE = 'DECREASE';
+  const FETCHDATA = 'FETCHDATA';
+
+  //actions
+  const increase = (data) => {
+    return {type: INCREASE, data: data}
+  };
+  const decrease = () => {
+    return {type: DECREASE}
+  };
+
+  //init
+  const url = 'http://5c1e0372bc26950013fbcaf3.mockapi.io/users';
+
+  const initState = {num: 0, data: []};
+
+  //reducer
+  const counter = (state = initState, action) => {
+    switch (action.type) {
+      case INCREASE:
+        return {...state, num: state.num + 1};
+      case DECREASE:
+        return {num: state.num - 1};
+      case FETCHDATA:
+        return {...state, data: action.data};
+      default:
+        return state;
+    }
+  }
+
+  const {createStore} = Redux;
+  const store = createStore(counter);
+
+  //render
+  const render = () => {
+    const list = store.getState().data;
+    const listData = list.map(data => `id ${data.id} name is ${data.name} \n`);
+    view.innerText = store.getState().num;
+    view2.innerText = listData.join('');
+
+  };
+  render();
+  store.subscribe(render);
+
+  btnIncrement.addEventListener('click', () => {
+    store.dispatch(increase())
+  });
+  btnDecrement.addEventListener('click', () => {
+    store.dispatch(decrease());
+  });
+  btnShowData.addEventListener('click', async () => {
+    const data = await getData(url);
+    store.dispatch({type: FETCHDATA, data: data})
+  })
+
+  // api
+  async function getData(url) {
+    const response = await fetch(url);
+    return response.json()
+  }
+
+
+</script>
+</body>
+</html>
